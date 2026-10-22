@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Bishop",
+    "slug": "bishop",
+    "scheme": "bishop",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.mikem3d.bishop",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.mikem3d.bishop",
+      "adaptiveIcon": {
+        "backgroundColor": "#11151C",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-image",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "backgroundColor": "#11151C"
+        }
+      ]
+    ]
+  }
+}

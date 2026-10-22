@@ -1,0 +1,11 @@
+{
+  "name": "bishop",
+  "private": true,
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "mobile": "pnpm --filter @bishop/mobile start",
+    "db:test": "bash supabase/tests/run.sh"
+  }
+}
