@@ -13,4 +13,4 @@ PSQL=(psql -h "$DIR" -p "$PORT" -U postgres -d postgres -v ON_ERROR_STOP=1 -q)
 
 "${PSQL[@]}" -f auth_stub.sql
 for f in ../migrations/*.sql; do "${PSQL[@]}" -f "$f"; done
-"${PSQL[@]}" -f rls_test.sql
+for f in *_test.sql; do echo "== $f"; "${PSQL[@]}" -f "$f"; done

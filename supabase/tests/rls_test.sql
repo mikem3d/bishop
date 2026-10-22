@@ -13,7 +13,7 @@ end $$;
 
 create function pg_temp.check(ok boolean, what text) returns void language plpgsql as $$
 begin
-  if not ok then raise exception 'FAILED: %', what; end if;
+  if ok is not true then raise exception 'FAILED: %', what; end if;
   raise notice 'ok: %', what;
 end $$;
 
