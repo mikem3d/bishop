@@ -6,6 +6,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "mobile": "pnpm --filter @bishop/mobile start",
-    "db:test": "bash supabase/tests/run.sh"
+    "db:test": "bash supabase/tests/run.sh",
+    "bishop": "node packages/agent-kit/dist/cli.js",
+    "build:agent": "pnpm --filter @bishop/agent-kit build"
   }
 }

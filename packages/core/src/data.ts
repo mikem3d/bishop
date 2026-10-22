@@ -103,6 +103,11 @@ export async function updateProject(
   return must(await db.from('projects').update(patch).eq('id', id).select().single());
 }
 
+/** Remove a project's agent link. Its queued work waits until it's linked again. */
+export async function unlinkProject(db: Client, projectId: Uuid): Promise<void> {
+  must(await db.from('project_links').delete().eq('project_id', projectId));
+}
+
 // ── Tasks ────────────────────────────────────────────────────────────────────
 
 const TASK_SELECT =
@@ -268,7 +273,7 @@ export function isAgentOnline(a: Pick<Agent, 'last_heartbeat_at'>, now = Date.no
 /** Call `onChange` whenever any Bishop table changes. Returns an unsubscribe function. */
 export function subscribeToChanges(db: Client, onChange: (table: string) => void): () => void {
   const channel = db.channel('bishop-changes');
-  for (const table of ['tasks', 'task_events', 'task_links', 'projects', 'buckets', 'agents']) {
+  for (const table of ['tasks', 'task_events', 'task_links', 'projects', 'buckets', 'agents', 'project_links']) {
     channel.on('postgres_changes', { event: '*', schema: 'public', table }, () => onChange(table));
   }
   channel.subscribe();

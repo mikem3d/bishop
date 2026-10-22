@@ -1,11 +1,11 @@
-import { buildHome, isOpen } from '@bishop/core';
+import { buildHome, isAgentOnline, isOpen } from '@bishop/core';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { TaskRow } from '../../components/TaskRow';
 import { AddButton, EmptyLine, ErrorLine, Loading, SectionHeader } from '../../components/ui';
-import { useProject, useProjects, useProjectTasks, useUpdateProject } from '../../lib/queries';
+import { useAgents, useProject, useProjects, useProjectTasks, useUnlinkProject, useUpdateProject } from '../../lib/queries';
 import { space, type, useTheme } from '../../lib/theme';
 import { useToday } from '../../lib/today';
 
@@ -19,12 +19,16 @@ export default function ProjectScreen() {
   const projects = useProjects();
   const tasks = useProjectTasks(id);
   const update = useUpdateProject();
+  const unlink = useUnlinkProject();
+  const agents = useAgents();
   const [showDone, setShowDone] = useState(false);
 
   if (project.isPending || tasks.isPending) return <Loading />;
   if (!project.data) return <ErrorLine error={project.error ?? 'Project not found.'} />;
   const p = project.data;
   const link = (projects.data ?? []).find((x) => x.id === id)?.linkedAgent;
+  const linkedAgent = link ? (agents.data ?? []).find((a) => a.id === link.id) : undefined;
+  const online = linkedAgent ? isAgentOnline(linkedAgent) : false;
   const all = tasks.data ?? [];
   const v = buildHome(all, today);
   const open = [...v.today.map((e) => e.task), ...v.next.tomorrow, ...v.next.thisWeek, ...v.next.later, ...v.inbox];
@@ -36,6 +40,9 @@ export default function ProjectScreen() {
         text: p.status === 'paused' ? 'Resume project' : 'Pause project',
         onPress: () => update.mutate({ id: p.id, patch: { status: p.status === 'paused' ? 'active' : 'paused' } }),
       },
+      ...(link
+        ? [{ text: `Unlink from ${link.name}`, onPress: () => unlink.mutate(p.id) }]
+        : []),
       {
         text: 'Archive project',
         style: 'destructive',
@@ -58,10 +65,14 @@ export default function ProjectScreen() {
       />
       <ScrollView contentContainerStyle={{ padding: space.lg, paddingBottom: 120 }}>
         <Text style={[type.small, { color: t.textMuted }]}>
-          {link ? `Linked to ${link.name}. Queue a task and it picks it up.` : 'Not linked to an agent. Run bishop link in this project’s folder on a Mac.'}
+          {link
+            ? online
+              ? `Linked to ${link.name}, online. Queue a task and it picks it up.`
+              : `Linked to ${link.name}, which is offline. Queued tasks wait until it's back.`
+            : 'Not linked to an agent. Run bishop link in this project’s folder on a Mac.'}
           {p.status === 'paused' ? '  Paused.' : ''}
         </Text>
-        <ErrorLine error={tasks.error ?? update.error} />
+        <ErrorLine error={tasks.error ?? update.error ?? unlink.error} />
 
         {v.needsYou.length ? (
           <>

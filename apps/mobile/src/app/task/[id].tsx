@@ -16,6 +16,7 @@ import {
   useProjects,
   useTask,
   useTaskEvents,
+  useAgents,
   useTaskLinks,
   useUpdateTask,
 } from '../../lib/queries';
@@ -35,6 +36,7 @@ export default function TaskScreen() {
   const update = useUpdateTask();
   const remove = useDeleteTask();
   const comment = useAddComment(id);
+  const agents = useAgents();
 
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -107,6 +109,17 @@ export default function TaskScreen() {
           onRequeue={() => patch({ status: 'queued' })}
         />
 
+        {x.status === 'queued' || x.status === 'in_progress' ? (
+          <View style={{ marginTop: space.lg }}>
+            <Button
+              label={x.status === 'queued' ? 'Keep it for myself' : 'Stop and take it back'}
+              icon="hand-left-outline"
+              kind="secondary"
+              onPress={() => patch({ status: 'todo' })}
+            />
+          </View>
+        ) : null}
+
         {!isAgentWork ? (
           <View style={{ flexDirection: 'row', gap: space.sm, marginTop: space.lg }}>
             <View style={{ flex: 1 }}>
@@ -153,7 +166,7 @@ export default function TaskScreen() {
         <Links taskId={x.id} workspaceId={x.workspace_id} links={links.data ?? []} />
 
         <FieldLabel>Thread</FieldLabel>
-        <Thread events={events.data ?? []} />
+        <Thread events={events.data ?? []} agentNames={Object.fromEntries((agents.data ?? []).map((a) => [a.id, a.name]))} />
         <View style={[styles.replyRow, { borderColor: t.border, backgroundColor: t.surface }]}>
           <TextInput
             value={reply}
@@ -287,14 +300,14 @@ const EVENT_ICON: Record<TaskEvent['kind'], keyof typeof Ionicons.glyphMap> = {
   run_log: 'terminal-outline',
 };
 
-function Thread({ events }: { events: TaskEvent[] }) {
+function Thread({ events, agentNames }: { events: TaskEvent[]; agentNames: Record<string, string> }) {
   const t = useTheme();
   if (!events.length) return <Text style={[type.small, { color: t.textFaint }]}>No activity yet.</Text>;
   return (
     <View>
       {events.map((e) => {
         const quiet = e.kind === 'status' || e.kind === 'run_log';
-        const who = e.actor_agent_id ? 'Agent' : 'You';
+        const who = e.actor_agent_id ? agentNames[e.actor_agent_id] ?? 'Agent' : e.actor_user_id ? 'You' : 'Bishop';
         const when = new Date(e.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
         return (
           <View key={e.id} style={styles.event}>

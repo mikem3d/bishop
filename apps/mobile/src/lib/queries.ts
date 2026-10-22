@@ -71,6 +71,9 @@ export function useLiveUpdates(enabled: boolean) {
         case 'agents':
           void qc.invalidateQueries({ queryKey: keys.agents });
           break;
+        case 'project_links':
+          void qc.invalidateQueries({ queryKey: keys.projects });
+          break;
       }
     });
   }, [enabled, qc]);
@@ -177,5 +180,13 @@ export function useDeleteLink(taskId: Uuid) {
   return useMutation({
     mutationFn: (id: Uuid) => core.deleteTaskLink(supabase, id),
     onSettled: () => qc.invalidateQueries({ queryKey: keys.links(taskId) }),
+  });
+}
+
+export function useUnlinkProject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (projectId: Uuid) => core.unlinkProject(supabase, projectId),
+    onSettled: () => qc.invalidateQueries({ queryKey: keys.projects }),
   });
 }
