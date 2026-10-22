@@ -15,25 +15,20 @@ supabase/        database migrations and access tests
 
 ## Setup
 
-### 1. Supabase (mikem3d account)
+### 1. Supabase
 
-1. Create a project at supabase.com while signed in as **mikem3d**.
-2. Open **SQL Editor**, paste `supabase/migrations/20261022120000_init.sql`, and run it.
-   (Or with the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.)
-3. **Authentication → Email Templates → Magic Link**: make sure the template includes `{{ .Token }}` so the email carries the 6-digit code the app asks for. For example: `Your Bishop code is {{ .Token }}`.
-4. **Project Settings → API**: copy the project URL and the publishable (anon) key.
+Bishop's project is `gthmglyafpszmtguwmbm` (US East) in the mikem3d **bishop** organization. Both migrations in `supabase/migrations/` are applied. The app has the project URL and publishable key built in (`packages/core/src/config.ts`); both are public by design.
+
+One dashboard step is still manual: **Authentication → Emails → Magic Link** must include `{{ .Token }}` so sign-in emails carry the 6-digit code the app asks for, e.g. `Your Bishop sign-in code is {{ .Token }}`.
 
 ### 2. The phone app
 
 ```sh
 pnpm install
-cp apps/mobile/.env.example apps/mobile/.env   # paste the URL and publishable key
-pnpm mobile                                     # starts Expo
+pnpm mobile          # starts Expo
 ```
 
-Scan the QR code with **Expo Go** (SDK 58) on your phone. Sign in with your email; your account starts with a workspace and three buckets: Work, Personal and Side projects.
-
-Never put the database password or a secret/service key in the app. Row-level security is what protects the data.
+Scan the QR code with **Expo Go** (SDK 58) on your phone and sign in with your email. Your account starts with a workspace and three buckets: Work, Personal and Side projects.
 
 ### 3. Installable builds
 

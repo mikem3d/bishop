@@ -15,15 +15,13 @@ revoke execute on function public.tasks_before_write(), public.tasks_log_status(
   from public, anon, authenticated;
 
 -- Evaluate the signed-in user once per query, not once per row.
-drop policy "owners rename workspace" on public.workspaces;
-create policy "owners rename workspace" on public.workspaces
-  for update to authenticated using (exists (
+alter policy "owners rename workspace" on public.workspaces
+  using (exists (
     select 1 from public.memberships m
     where m.workspace_id = workspaces.id and m.user_id = (select auth.uid()) and m.role = 'owner'));
 
-drop policy "editors comment" on public.task_events;
-create policy "editors comment" on public.task_events
-  for insert to authenticated with check (
+alter policy "editors comment" on public.task_events
+  with check (
     private.can_edit(workspace_id) and kind in ('comment', 'answer')
     and actor_user_id = (select auth.uid()) and actor_agent_id is null);
 
@@ -40,8 +38,3 @@ create index if not exists task_links_task_ws_idx on public.task_links (task_id,
 create index if not exists task_events_task_ws_idx on public.task_events (task_id, workspace_id);
 create index if not exists task_events_actor_user_idx on public.task_events (actor_user_id);
 create index if not exists task_events_actor_agent_idx on public.task_events (actor_agent_id);
--- Superseded by the composite indexes above.
-drop index if exists public.projects_bucket_idx;
-drop index if exists public.project_links_agent_idx;
-drop index if exists public.tasks_project_idx;
-drop index if exists public.task_links_task_idx;
